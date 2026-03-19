@@ -4,9 +4,9 @@ export default function StatusChip({ status }) {
   const { t } = useLang();
 
   const styles = {
-    Approved: 'bg-[#DCFCE7] text-[#166534]',
-    Pending: 'bg-[#FEF3C7] text-[#92400E]',
-    'Needs Review': 'bg-[#FEE2E2] text-[#991B1B]',
+    Approved: 'bg-[#DCFCE7] text-[#2E7D32]',
+    Pending: 'bg-[#FEF3C7] text-[#B45309]',
+    'Needs Review': 'bg-[#FEE2E2] text-[#B91C1C]',
   };
 
   const labels = {
@@ -19,7 +19,7 @@ export default function StatusChip({ status }) {
   const label = labels[status] || status;
 
   return (
-    <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${cls}`}>
+    <span className={`inline-flex rounded px-2 py-0.5 text-xs font-semibold uppercase tracking-wide ${cls}`}>
       {label}
     </span>
   );
