@@ -1,0 +1,33 @@
+{
+  "name": "backend",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx -y tsx ./src/index.ts",
+    "build": "npx -y tsx ./build.ts",
+    "typecheck": "npx -y tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@workspace/db": "workspace:*",
+    "@workspace/api-zod": "workspace:*",
+    "drizzle-orm": "catalog:",
+    "express": "^5",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2",
+    "helmet": "^8.0.0",
+    "express-rate-limit": "^7.5.0",
+    "jsonwebtoken": "^9.0.2",
+    "dotenv": "^16.4.7",
+    "dotenv-safe": "^9.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@types/express": "^5.0.6",
+    "@types/cors": "^2.8.19",
+    "@types/cookie-parser": "^1.4.10",
+    "esbuild": "^0.27.3",
+    "tsx": "catalog:",
+    "@types/jsonwebtoken": "^9.0.8"
+  }
+}
