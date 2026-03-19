@@ -3,7 +3,7 @@ import { Camera, Upload, MapPin, CheckCircle, AlertTriangle } from 'lucide-react
 import { useLang } from '../context/LangContext';
 import { useApp } from '../context/AppContext';
 import { useLocation } from 'wouter';
-import GovLayout from '../components/GovLayout';
+import Header from '../components/Header';
 import { calculateAreaBill, getAreaRate, formatCurrency } from '../utils/billing';
 
 const CROP_KEYS = ['foodGrains', 'sugarcane', 'banana', 'cotton', 'horticulture'];
@@ -36,7 +36,9 @@ export default function RequestFormPage() {
 
   const handleImage = (e) => {
     const file = e.target.files?.[0];
-    if (file) setImageUrl(URL.createObjectURL(file));
+    if (file) {
+      setImageUrl(URL.createObjectURL(file));
+    }
   };
 
   const validate = () => {
@@ -49,12 +51,17 @@ export default function RequestFormPage() {
 
   const handleSubmit = () => {
     const e = validate();
-    if (Object.keys(e).length > 0) { setErrors(e); return; }
+    if (Object.keys(e).length > 0) {
+      setErrors(e);
+      return;
+    }
     setErrors({});
     setPhase('verifying');
+
     setTimeout(() => {
       const approved = Math.random() < 0.7;
-      setResult(approved ? 'Approved' : 'Needs Review');
+      const status = approved ? 'Approved' : 'Needs Review';
+      setResult(status);
       setPhase('result');
     }, 2000);
   };
@@ -62,7 +69,8 @@ export default function RequestFormPage() {
   const handleGoToDashboard = () => {
     addRequest({
       id: 'REQ-' + Date.now(),
-      cropKey, seasonKey,
+      cropKey,
+      seasonKey,
       duration: parseInt(duration),
       landArea: profile.landArea,
       imageUrl: imageUrl || null,
@@ -76,205 +84,199 @@ export default function RequestFormPage() {
     navigate('/dashboard');
   };
 
-  const clrErr = (key) => setErrors(err => { const n = {...err}; delete n[key]; return n; });
   const showBillPreview = cropKey && seasonKey;
 
-  const inputCls = "w-full border border-[#C7D0C9] rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0D47A1] bg-white";
-  const labelCls = "block text-xs font-semibold text-[#374151] mb-1 uppercase tracking-wide";
-  const errCls = "text-xs text-[#B91C1C] mt-1";
-
   return (
-    <GovLayout active="requests">
-      <div className="p-6">
-        <div className="mb-5">
-          <h1 className="text-lg font-bold text-[#0F172A]">{t('requestFormTitle')}</h1>
-          <p className="text-xs text-[#6B7280] mt-0.5">Submit a new irrigation water request for AI verification</p>
-        </div>
+    <div className="min-h-screen bg-[#F4F6F4]">
+      <div className="max-w-[480px] mx-auto bg-white min-h-screen flex flex-col relative">
+        <Header title={t('requestFormTitle')} showBack />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          <div className="lg:col-span-2 space-y-5">
-            <div className="bg-white rounded-lg border border-[#C7D0C9] p-5">
-              <h2 className="text-xs font-bold text-[#0F172A] uppercase tracking-wide mb-4 pb-2 border-b border-[#C7D0C9]">Crop & Season Details</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className={labelCls}>{t('cropTypeLabel')}</label>
-                  <select
-                    value={cropKey}
-                    onChange={e => { setCropKey(e.target.value); clrErr('crop'); }}
-                    className={inputCls}
-                  >
-                    <option value="">{t('cropTypePlaceholder')}</option>
-                    {CROP_KEYS.map(k => <option key={k} value={k}>{t(k)}</option>)}
-                  </select>
-                  {errors.crop && <p className={errCls}>{errors.crop}</p>}
-                </div>
-
-                <div>
-                  <label className={labelCls}>{t('durationLabel')}</label>
-                  <input
-                    type="number" min={1} max={365}
-                    placeholder={t('durationPlaceholder')}
-                    value={duration}
-                    onChange={e => { setDuration(e.target.value); clrErr('duration'); }}
-                    className={inputCls}
-                  />
-                  <p className="text-xs text-[#6B7280] mt-1">{t('durationHelper')}</p>
-                  {errors.duration && <p className={errCls}>{errors.duration}</p>}
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label className={labelCls}>{t('seasonLabel')}</label>
-                  <div className="flex gap-2">
-                    {SEASON_KEYS.map(k => (
-                      <button
-                        key={k}
-                        onClick={() => { setSeasonKey(k); clrErr('season'); }}
-                        className={`flex-1 rounded px-3 py-2 text-sm font-medium transition-colors border
-                          ${seasonKey === k
-                            ? 'bg-[#0D47A1] text-white border-[#0D47A1]'
-                            : 'bg-white text-[#374151] border-[#C7D0C9] hover:bg-[#F1F5F2]'
-                          }`}
-                      >
-                        {t(k)}
-                      </button>
-                    ))}
-                  </div>
-                  {errors.season && <p className={errCls}>{errors.season}</p>}
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg border border-[#C7D0C9] p-5">
-              <h2 className="text-xs font-bold text-[#0F172A] uppercase tracking-wide mb-4 pb-2 border-b border-[#C7D0C9]">Land Record (Auto-filled)</h2>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className={labelCls}>{t('landId')}</label>
-                  <input readOnly value={profile.landId || '—'} className={`${inputCls} bg-[#F8FAFC] text-[#6B7280]`} />
-                </div>
-                <div>
-                  <label className={labelCls}>{t('landArea')}</label>
-                  <input readOnly value={profile.landArea ? `${profile.landArea} ${t('hectares')}` : '—'} className={`${inputCls} bg-[#F8FAFC] text-[#6B7280]`} />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg border border-[#C7D0C9] p-5">
-              <h2 className="text-xs font-bold text-[#0F172A] uppercase tracking-wide mb-4 pb-2 border-b border-[#C7D0C9]">{t('uploadPhotoLabel')}</h2>
-              <p className="text-xs text-[#6B7280] mb-3">{t('uploadPhotoHelper')}</p>
-
-              {imageUrl ? (
-                <div>
-                  <img src={imageUrl} alt="field" className="w-full rounded max-h-48 object-cover border border-[#C7D0C9]" />
-                  <button onClick={() => setImageUrl(null)} className="mt-2 text-xs text-[#0D47A1] font-medium hover:underline">
-                    {t('changePhoto')}
-                  </button>
-                </div>
-              ) : (
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => cameraRef.current?.click()}
-                    className="flex-1 flex items-center justify-center gap-2 bg-white border border-[#C7D0C9] rounded py-2.5 text-sm text-[#374151] hover:bg-[#F1F5F2] transition-colors"
-                  >
-                    <Camera size={15} />
-                    {t('openCamera')}
-                  </button>
-                  <button
-                    onClick={() => galleryRef.current?.click()}
-                    className="flex-1 flex items-center justify-center gap-2 bg-white border border-[#C7D0C9] rounded py-2.5 text-sm text-[#374151] hover:bg-[#F1F5F2] transition-colors"
-                  >
-                    <Upload size={15} />
-                    {t('uploadFromGallery')}
-                  </button>
-                </div>
-              )}
-
-              <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleImage} />
-              <input ref={galleryRef} type="file" accept="image/*" className="hidden" onChange={handleImage} />
-
-              <div className="flex items-center gap-2 mt-3 text-xs text-[#6B7280]">
-                <MapPin size={12} className="flex-shrink-0" />
-                <span>{t('geoTagLabel')}: {t('geoTagValue')} — {t('geoTagNote')}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            {showBillPreview && (
-              <div className="bg-white rounded-lg border-2 border-[#1B5E20] p-4">
-                <p className="text-xs font-bold text-[#4B5563] uppercase tracking-wide mb-2">{t('billPreviewTitle')}</p>
-                <p className="text-3xl font-bold text-[#1B5E20]">{formatCurrency(calculatedBill)}</p>
-                <p className="text-xs text-[#6B7280] mt-1">
-                  {t('rateApplied')}: ₹{getAreaRate(cropKey, seasonKey)} {t('perHectare')}
-                </p>
-                <p className="text-xs text-[#6B7280] mt-2 border-t border-[#C7D0C9] pt-2">{t('billPreviewNote')}</p>
-              </div>
-            )}
-
-            <div className="bg-white rounded-lg border border-[#C7D0C9] p-4">
-              <p className="text-xs font-bold text-[#0F172A] uppercase tracking-wide mb-3">Submission Checklist</p>
-              <ul className="space-y-2 text-xs text-[#4B5563]">
-                {[
-                  { label: 'Crop type selected', done: !!cropKey },
-                  { label: 'Season selected', done: !!seasonKey },
-                  { label: 'Duration entered', done: !!duration && parseInt(duration) > 0 },
-                  { label: 'Photo uploaded', done: !!imageUrl },
-                ].map(({ label, done }) => (
-                  <li key={label} className="flex items-center gap-2">
-                    <span className={`w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 text-xs ${done ? 'bg-[#2E7D32] border-[#2E7D32] text-white' : 'border-[#C7D0C9]'}`}>
-                      {done && '✓'}
-                    </span>
-                    <span className={done ? 'text-[#2E7D32]' : ''}>{label}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <button
-              onClick={handleSubmit}
-              className="w-full bg-[#1B5E20] text-white rounded px-4 py-3 text-sm font-bold hover:bg-[#154a19] transition-colors uppercase tracking-wide"
+        <div className="flex-1 px-5 py-5 pb-28 overflow-y-auto space-y-5">
+          <div>
+            <label className="block text-sm font-medium text-[#4B5563] mb-1.5">{t('cropTypeLabel')}</label>
+            <select
+              value={cropKey}
+              onChange={e => { setCropKey(e.target.value); setErrors(err => { const n = {...err}; delete n.crop; return n; }); }}
+              className="w-full border border-[#D1D9D4] rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#1B5E37] bg-white"
             >
-              {t('submitRequest')}
-            </button>
+              <option value="">{t('cropTypePlaceholder')}</option>
+              {CROP_KEYS.map(k => (
+                <option key={k} value={k}>{t(k)}</option>
+              ))}
+            </select>
+            {errors.crop && <p className="text-xs text-[#991B1B] mt-1">{errors.crop}</p>}
           </div>
-        </div>
-      </div>
 
-      {phase === 'verifying' && (
-        <div className="fixed inset-0 bg-white/90 z-50 flex flex-col items-center justify-center">
-          <div className="w-12 h-12 rounded-full border-4 border-[#E3F2FD] border-t-[#0D47A1] animate-spin" />
-          <p className="text-lg font-semibold mt-6 text-[#0F172A]">{t('aiVerifyingTitle')}</p>
-          <p className="text-sm text-[#6B7280] text-center px-8 mt-2">{t('aiVerifyingSubtitle')}</p>
-        </div>
-      )}
+          <div>
+            <label className="block text-sm font-medium text-[#4B5563] mb-2">{t('seasonLabel')}</label>
+            <div className="flex gap-2">
+              {SEASON_KEYS.map(k => (
+                <button
+                  key={k}
+                  onClick={() => { setSeasonKey(k); setErrors(err => { const n = {...err}; delete n.season; return n; }); }}
+                  className={`flex-1 rounded-xl px-2 py-2.5 text-sm font-medium transition-colors border
+                    ${seasonKey === k
+                      ? 'bg-[#1B5E37] text-white border-[#1B5E37]'
+                      : 'bg-white text-[#4B5563] border-[#D1D9D4]'
+                    }`}
+                >
+                  {t(k)}
+                </button>
+              ))}
+            </div>
+            {errors.season && <p className="text-xs text-[#991B1B] mt-1">{errors.season}</p>}
+          </div>
 
-      {phase === 'result' && result && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center px-6">
-          <div className="bg-white max-w-sm w-full rounded-lg p-8 text-center shadow-xl border border-[#C7D0C9]">
-            {result === 'Approved' ? (
-              <>
-                <CheckCircle size={48} className="text-[#2E7D32] mx-auto" />
-                <h2 className="text-xl font-bold mt-4 text-[#0F172A]">{t('approvedTitle')}</h2>
-                <p className="text-sm text-[#6B7280] mt-2">{t('approvedMessage')}</p>
-              </>
+          <div>
+            <label className="block text-sm font-medium text-[#4B5563] mb-1.5">{t('durationLabel')}</label>
+            <input
+              type="number"
+              min={1}
+              max={365}
+              placeholder={t('durationPlaceholder')}
+              value={duration}
+              onChange={e => { setDuration(e.target.value); setErrors(err => { const n = {...err}; delete n.duration; return n; }); }}
+              className="w-full border border-[#D1D9D4] rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#1B5E37] bg-white"
+            />
+            <p className="text-xs text-[#9CA3AF] mt-1">{t('durationHelper')}</p>
+            {errors.duration && <p className="text-xs text-[#991B1B] mt-1">{errors.duration}</p>}
+          </div>
+
+          <div className="bg-[#F4F6F4] rounded-xl p-4">
+            <p className="text-sm font-medium text-[#4B5563] mb-2">{t('selectedLand')}</p>
+            <div className="space-y-1 text-sm">
+              <div className="flex justify-between">
+                <span className="text-[#9CA3AF]">{t('landId')}</span>
+                <span className="font-medium text-[#111827]">{profile.landId}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#9CA3AF]">{t('landArea')}</span>
+                <span className="font-medium text-[#111827]">{profile.landArea} {t('hectares')}</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-[#4B5563] mb-1.5">{t('uploadPhotoLabel')}</label>
+            <p className="text-xs text-[#9CA3AF] mb-3">{t('uploadPhotoHelper')}</p>
+
+            {imageUrl ? (
+              <div>
+                <img
+                  src={imageUrl}
+                  alt="field"
+                  className="w-full rounded-xl max-h-52 object-cover"
+                />
+                <button
+                  onClick={() => setImageUrl(null)}
+                  className="mt-2 text-sm text-[#1B5E37] font-medium hover:underline"
+                >
+                  {t('changePhoto')}
+                </button>
+              </div>
             ) : (
-              <>
-                <AlertTriangle size={48} className="text-[#B45309] mx-auto" />
-                <h2 className="text-xl font-bold mt-4 text-[#B45309]">{t('reviewTitle')}</h2>
-                <p className="text-sm text-[#6B7280] mt-2">{t('reviewMessage')}</p>
-              </>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => cameraRef.current?.click()}
+                  className="flex-1 flex items-center justify-center gap-2 bg-white border border-[#D1D9D4] rounded-xl py-3 text-sm font-medium text-[#4B5563] hover:bg-[#F4F6F4] transition-colors"
+                >
+                  <Camera size={16} />
+                  {t('openCamera')}
+                </button>
+                <button
+                  onClick={() => galleryRef.current?.click()}
+                  className="flex-1 flex items-center justify-center gap-2 bg-white border border-[#D1D9D4] rounded-xl py-3 text-sm font-medium text-[#4B5563] hover:bg-[#F4F6F4] transition-colors"
+                >
+                  <Upload size={16} />
+                  {t('uploadFromGallery')}
+                </button>
+              </div>
             )}
-            <hr className="mt-4 border-[#C7D0C9]" />
-            <p className="text-xs uppercase text-[#6B7280] mt-4 tracking-wide">{t('estimatedBill')}</p>
-            <p className="text-2xl font-bold text-[#1B5E20] mt-1">{formatCurrency(calculatedBill)}</p>
-            <button
-              onClick={handleGoToDashboard}
-              className="w-full bg-[#1B5E20] text-white rounded px-6 py-3 font-bold hover:bg-[#154a19] transition-colors mt-6 uppercase tracking-wide text-sm"
-            >
-              {t('goToDashboard')}
-            </button>
+
+            <input
+              ref={cameraRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={handleImage}
+            />
+            <input
+              ref={galleryRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImage}
+            />
+
+            <div className="flex items-center gap-2 mt-3">
+              <MapPin size={12} className="text-[#9CA3AF] flex-shrink-0" />
+              <div>
+                <span className="text-xs text-[#4B5563] font-medium">{t('geoTagLabel')}: </span>
+                <span className="text-xs text-[#4B5563]">{t('geoTagValue')}</span>
+                <p className="text-xs text-[#9CA3AF]">{t('geoTagNote')}</p>
+              </div>
+            </div>
           </div>
+
+          {showBillPreview && (
+            <div className="bg-[#E8F5EE] border border-[#1B5E37] rounded-2xl p-4">
+              <p className="text-sm font-medium text-[#4B5563] uppercase tracking-wide mb-2">{t('billPreviewTitle')}</p>
+              <p className="text-2xl font-bold text-[#1B5E37]">{formatCurrency(calculatedBill)}</p>
+              <p className="text-xs text-[#9CA3AF] mt-1">
+                {t('rateApplied')}: ₹{getAreaRate(cropKey, seasonKey)} {t('perHectare')}
+              </p>
+              <p className="text-xs text-[#9CA3AF] mt-2">{t('billPreviewNote')}</p>
+            </div>
+          )}
         </div>
-      )}
-    </GovLayout>
+
+        <div className="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto px-5 py-4 bg-white border-t border-[#D1D9D4]">
+          <button
+            onClick={handleSubmit}
+            className="w-full bg-[#1B5E37] text-white rounded-xl px-6 py-3.5 font-semibold hover:bg-[#154d2e] transition-colors"
+          >
+            {t('submitRequest')}
+          </button>
+        </div>
+
+        {phase === 'verifying' && (
+          <div className="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center">
+            <div className="w-12 h-12 rounded-full border-4 border-[#E8F5EE] border-t-[#1B5E37] animate-spin" />
+            <p className="text-lg font-semibold mt-6 text-[#111827]">{t('aiVerifyingTitle')}</p>
+            <p className="text-sm text-[#9CA3AF] text-center px-8 mt-2">{t('aiVerifyingSubtitle')}</p>
+          </div>
+        )}
+
+        {phase === 'result' && result && (
+          <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center px-6">
+            <div className="bg-white max-w-xs w-full rounded-2xl p-8 text-center shadow-xl">
+              {result === 'Approved' ? (
+                <>
+                  <CheckCircle size={52} className="text-[#166534] mx-auto" />
+                  <h2 className="text-xl font-bold mt-4 text-[#111827]">{t('approvedTitle')}</h2>
+                  <p className="text-sm text-[#9CA3AF] mt-2">{t('approvedMessage')}</p>
+                </>
+              ) : (
+                <>
+                  <AlertTriangle size={52} className="text-[#92400E] mx-auto" />
+                  <h2 className="text-xl font-bold mt-4 text-[#92400E]">{t('reviewTitle')}</h2>
+                  <p className="text-sm text-[#9CA3AF] mt-2">{t('reviewMessage')}</p>
+                </>
+              )}
+              <hr className="mt-4 border-[#D1D9D4]" />
+              <p className="text-xs uppercase text-[#9CA3AF] mt-4 tracking-wide">{t('estimatedBill')}</p>
+              <p className="text-2xl font-bold text-[#1B5E37] mt-1">{formatCurrency(calculatedBill)}</p>
+              <button
+                onClick={handleGoToDashboard}
+                className="w-full bg-[#1B5E37] text-white rounded-xl px-6 py-3.5 font-semibold hover:bg-[#154d2e] transition-colors mt-6"
+              >
+                {t('goToDashboard')}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

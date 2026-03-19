@@ -1,17 +1,21 @@
 import { useState } from 'react';
-import { Droplets, Globe } from 'lucide-react';
 import { useLang } from '../context/LangContext';
 import { useApp } from '../context/AppContext';
 import { useLocation } from 'wouter';
+import Header from '../components/Header';
 
 export default function ProfileSetupPage() {
-  const { t, cycleLang } = useLang();
+  const { t } = useLang();
   const { setProfile } = useApp();
   const [, navigate] = useLocation();
 
   const [form, setForm] = useState({
-    name: '', aadhaar: '', landId: '', landArea: '',
-    beneficiaryType: 'wua', waterSource: ''
+    name: '',
+    aadhaar: '',
+    landId: '',
+    landArea: '',
+    beneficiaryType: 'wua',
+    waterSource: ''
   });
   const [errors, setErrors] = useState({});
 
@@ -35,10 +39,15 @@ export default function ProfileSetupPage() {
 
   const handleSave = () => {
     const e = validate();
-    if (Object.keys(e).length > 0) { setErrors(e); return; }
+    if (Object.keys(e).length > 0) {
+      setErrors(e);
+      return;
+    }
     setProfile({
-      name: form.name, aadhaar: form.aadhaar,
-      landId: form.landId, landArea: parseFloat(form.landArea),
+      name: form.name,
+      aadhaar: form.aadhaar,
+      landId: form.landId,
+      landArea: parseFloat(form.landArea),
       beneficiaryType: form.beneficiaryType,
       waterSource: form.beneficiaryType === 'individual' ? form.waterSource : null,
     });
@@ -50,81 +59,82 @@ export default function ProfileSetupPage() {
     if (errors[key]) setErrors(e => { const n = { ...e }; delete n[key]; return n; });
   };
 
-  const inputCls = "w-full border border-[#C7D0C9] rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0D47A1] bg-white";
-  const labelCls = "block text-xs font-semibold text-[#374151] mb-1 uppercase tracking-wide";
-  const errCls = "text-xs text-[#B91C1C] mt-1";
-
   return (
-    <div className="min-h-screen bg-[#F1F5F2] flex flex-col">
-      <div className="bg-[#0D47A1] text-white py-3 px-6 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Droplets size={18} />
-          <span className="text-sm font-bold tracking-wide">{t('appName')}</span>
-        </div>
-        <button
-          onClick={cycleLang}
-          className="flex items-center gap-1.5 text-xs font-semibold border border-blue-300 rounded px-2.5 py-1 hover:bg-blue-700 transition-colors"
-        >
-          <Globe size={13} />
-          {t('langLabel')}
-        </button>
-      </div>
+    <div className="min-h-screen bg-[#F4F6F4]">
+      <div className="max-w-[480px] mx-auto bg-white min-h-screen flex flex-col">
+        <Header title={t('profileSetupTitle')} />
 
-      <div className="flex-1 max-w-2xl mx-auto w-full px-4 py-8">
-        <div className="mb-5">
-          <h1 className="text-lg font-bold text-[#0F172A]">{t('profileSetupTitle')}</h1>
-          <p className="text-xs text-[#6B7280] mt-0.5">{t('profileSetupSubtitle')}</p>
-        </div>
+        <div className="flex-1 px-5 py-5 pb-28 overflow-y-auto">
+          <p className="text-sm text-[#9CA3AF] mb-6">{t('profileSetupSubtitle')}</p>
 
-        <div className="bg-white rounded-lg border border-[#C7D0C9] overflow-hidden">
-          <div className="bg-[#F8FAFC] px-5 py-3 border-b border-[#C7D0C9]">
-            <p className="text-xs font-bold text-[#0F172A] uppercase tracking-wide">Personal & Land Information</p>
-          </div>
-          <div className="p-5 space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className={labelCls}>{t('fullNameLabel')}</label>
-                <input type="text" placeholder={t('fullNamePlaceholder')} value={form.name}
-                  onChange={e => field('name', e.target.value)} className={inputCls} />
-                {errors.name && <p className={errCls}>{errors.name}</p>}
-              </div>
-              <div>
-                <label className={labelCls}>{t('aadhaarLabel')}</label>
-                <input type="number" maxLength={4} placeholder={t('aadhaarPlaceholder')} value={form.aadhaar}
-                  onChange={e => field('aadhaar', e.target.value.slice(0, 4))} className={inputCls} />
-                {errors.aadhaar && <p className={errCls}>{errors.aadhaar}</p>}
-              </div>
-              <div>
-                <label className={labelCls}>{t('landIdLabel')}</label>
-                <input type="text" placeholder={t('landIdPlaceholder')} value={form.landId}
-                  onChange={e => field('landId', e.target.value)} className={inputCls} />
-                {errors.landId && <p className={errCls}>{errors.landId}</p>}
-              </div>
-              <div>
-                <label className={labelCls}>{t('landAreaLabel')}</label>
-                <input type="number" placeholder={t('landAreaPlaceholder')} value={form.landArea}
-                  onChange={e => field('landArea', e.target.value)} className={inputCls} step="0.1" min="0" />
-                {errors.landArea && <p className={errCls}>{errors.landArea}</p>}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg border border-[#C7D0C9] overflow-hidden mt-4">
-          <div className="bg-[#F8FAFC] px-5 py-3 border-b border-[#C7D0C9]">
-            <p className="text-xs font-bold text-[#0F172A] uppercase tracking-wide">Beneficiary Classification</p>
-          </div>
-          <div className="p-5 space-y-4">
+          <div className="space-y-5">
             <div>
-              <label className={labelCls}>{t('beneficiaryTypeLabel')}</label>
+              <label className="block text-sm font-medium text-[#4B5563] mb-1.5">{t('fullNameLabel')}</label>
+              <input
+                type="text"
+                placeholder={t('fullNamePlaceholder')}
+                value={form.name}
+                onChange={e => field('name', e.target.value)}
+                className="w-full border border-[#D1D9D4] rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#1B5E37] bg-white"
+              />
+              {errors.name && <p className="text-xs text-[#991B1B] mt-1">{errors.name}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[#4B5563] mb-1.5">{t('aadhaarLabel')}</label>
+              <input
+                type="number"
+                maxLength={4}
+                placeholder={t('aadhaarPlaceholder')}
+                value={form.aadhaar}
+                onChange={e => field('aadhaar', e.target.value.slice(0, 4))}
+                className="w-full border border-[#D1D9D4] rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#1B5E37] bg-white"
+              />
+              {errors.aadhaar && <p className="text-xs text-[#991B1B] mt-1">{errors.aadhaar}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[#4B5563] mb-1.5">{t('landIdLabel')}</label>
+              <input
+                type="text"
+                placeholder={t('landIdPlaceholder')}
+                value={form.landId}
+                onChange={e => field('landId', e.target.value)}
+                className="w-full border border-[#D1D9D4] rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#1B5E37] bg-white"
+              />
+              {errors.landId && <p className="text-xs text-[#991B1B] mt-1">{errors.landId}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[#4B5563] mb-1.5">{t('landAreaLabel')}</label>
+              <input
+                type="number"
+                placeholder={t('landAreaPlaceholder')}
+                value={form.landArea}
+                onChange={e => field('landArea', e.target.value)}
+                className="w-full border border-[#D1D9D4] rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#1B5E37] bg-white"
+                step="0.1"
+                min="0"
+              />
+              {errors.landArea && <p className="text-xs text-[#991B1B] mt-1">{errors.landArea}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[#4B5563] mb-2">{t('beneficiaryTypeLabel')}</label>
               <div className="flex gap-3">
-                {[{ val: 'wua', label: t('registeredWUA') }, { val: 'individual', label: t('individualBeneficiary') }].map(({ val, label }) => (
-                  <button key={val} onClick={() => { field('beneficiaryType', val); field('waterSource', ''); }}
-                    className={`flex-1 rounded px-3 py-2 text-sm font-medium transition-colors border text-center
+                {[
+                  { val: 'wua', label: t('registeredWUA') },
+                  { val: 'individual', label: t('individualBeneficiary') },
+                ].map(({ val, label }) => (
+                  <button
+                    key={val}
+                    onClick={() => { field('beneficiaryType', val); field('waterSource', ''); }}
+                    className={`flex-1 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors border text-center
                       ${form.beneficiaryType === val
-                        ? 'bg-[#0D47A1] text-white border-[#0D47A1]'
-                        : 'bg-white text-[#374151] border-[#C7D0C9] hover:bg-[#F1F5F2]'
-                      }`}>
+                        ? 'bg-[#1B5E37] text-white border-[#1B5E37]'
+                        : 'bg-white text-[#4B5563] border-[#D1D9D4]'
+                      }`}
+                  >
                     {label}
                   </button>
                 ))}
@@ -133,21 +143,27 @@ export default function ProfileSetupPage() {
 
             {form.beneficiaryType === 'individual' && (
               <div>
-                <label className={labelCls}>{t('waterSourceLabel')}</label>
-                <select value={form.waterSource} onChange={e => field('waterSource', e.target.value)} className={inputCls}>
+                <label className="block text-sm font-medium text-[#4B5563] mb-1.5">{t('waterSourceLabel')}</label>
+                <select
+                  value={form.waterSource}
+                  onChange={e => field('waterSource', e.target.value)}
+                  className="w-full border border-[#D1D9D4] rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#1B5E37] bg-white"
+                >
                   <option value="">{t('cropTypePlaceholder')}</option>
-                  {waterSourceOptions.map(({ key, label }) => <option key={key} value={key}>{label}</option>)}
+                  {waterSourceOptions.map(({ key, label }) => (
+                    <option key={key} value={key}>{label}</option>
+                  ))}
                 </select>
-                {errors.waterSource && <p className={errCls}>{errors.waterSource}</p>}
+                {errors.waterSource && <p className="text-xs text-[#991B1B] mt-1">{errors.waterSource}</p>}
               </div>
             )}
           </div>
         </div>
 
-        <div className="mt-5">
+        <div className="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto px-5 py-4 bg-white border-t border-[#D1D9D4]">
           <button
             onClick={handleSave}
-            className="w-full bg-[#1B5E20] text-white rounded px-4 py-3 text-sm font-bold hover:bg-[#154a19] transition-colors uppercase tracking-wide"
+            className="w-full bg-[#1B5E37] text-white rounded-xl px-6 py-3.5 font-semibold hover:bg-[#154d2e] transition-colors"
           >
             {t('saveProfile')}
           </button>

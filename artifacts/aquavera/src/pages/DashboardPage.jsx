@@ -1,132 +1,118 @@
-import { Leaf, FileText, ChevronRight } from 'lucide-react';
+import { Droplets, Leaf, ChevronRight, FileText } from 'lucide-react';
 import { useLang } from '../context/LangContext';
 import { useApp } from '../context/AppContext';
 import { useLocation } from 'wouter';
-import GovLayout from '../components/GovLayout';
+import BottomNav from '../components/BottomNav';
+import RequestCard from '../components/RequestCard';
 import BillCard from '../components/BillCard';
-import StatusChip from '../components/StatusChip';
-import { formatCurrency } from '../utils/billing';
 
 export default function DashboardPage() {
-  const { t } = useLang();
+  const { t, cycleLang } = useLang();
   const { profile, requests } = useApp();
   const [, navigate] = useLocation();
 
   const lastRequest = requests[0];
   const lastCropKey = lastRequest?.cropKey || null;
-  const sorted = [...requests].sort((a, b) => new Date(b.date) - new Date(a.date));
+  const latest3 = requests.slice(0, 3);
 
   return (
-    <GovLayout active="dashboard">
-      <div className="p-6 space-y-5">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-bold text-[#0F172A]">{t('dashboardTitle')}</h1>
-            <p className="text-sm text-[#4B5563]">{t('greeting')}, <span className="font-semibold text-[#0F172A]">{profile.name || 'Farmer'}</span></p>
+    <div className="min-h-screen bg-[#F4F6F4]">
+      <div className="max-w-[480px] mx-auto bg-white min-h-screen flex flex-col">
+        <div className="flex items-center justify-between px-4 py-4 bg-white border-b border-[#D1D9D4] sticky top-0 z-10">
+          <div className="flex items-center gap-2">
+            <Droplets size={22} className="text-[#1B5E37]" />
+            <span className="text-base font-semibold text-[#1B5E37]">{t('appName')}</span>
           </div>
           <button
-            onClick={() => navigate('/request')}
-            className="hidden sm:flex items-center gap-2 bg-[#1B5E20] text-white text-sm font-semibold rounded px-4 py-2 hover:bg-[#154a19] transition-colors"
+            onClick={cycleLang}
+            className="flex items-center gap-1.5 text-sm font-medium text-[#1B5E37] border border-[#1B5E37] rounded-lg px-2.5 py-1 hover:bg-[#E8F5EE] transition-colors"
           >
-            <span>{t('requestWater')}</span>
-            <ChevronRight size={14} />
+            <span>{t('langLabel')}</span>
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-white rounded-lg border border-[#C7D0C9] p-4 border-l-4 border-l-[#1B5E20]">
-            <div className="flex items-center gap-2 mb-3 pb-2 border-b border-[#C7D0C9]">
-              <Leaf size={15} className="text-[#1B5E20]" />
-              <span className="text-sm font-semibold text-[#0F172A] uppercase tracking-wide">{t('landSummary')}</span>
+        <div className="flex-1 px-4 py-5 pb-28 overflow-y-auto space-y-5">
+          <div>
+            <p className="text-xl font-semibold text-[#111827]">{t('greeting')}, {profile.name || 'Farmer'}</p>
+          </div>
+
+          <div className="bg-white rounded-2xl border-l-4 border-[#1B5E37] border border-[#D1D9D4] shadow-sm p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <Leaf size={16} className="text-[#1B5E37]" />
+              <span className="text-base font-semibold text-[#111827]">{t('landSummary')}</span>
             </div>
-            <table className="w-full text-sm">
-              <tbody className="divide-y divide-[#F1F5F2]">
-                <tr>
-                  <td className="py-1.5 text-[#4B5563] w-2/5">{t('landId')}</td>
-                  <td className="py-1.5 font-medium text-[#0F172A] text-right">{profile.landId || '—'}</td>
-                </tr>
-                <tr>
-                  <td className="py-1.5 text-[#4B5563]">{t('landArea')}</td>
-                  <td className="py-1.5 font-medium text-[#0F172A] text-right">
-                    {profile.landArea ? `${profile.landArea} ${t('hectares')}` : '—'}
-                  </td>
-                </tr>
-                <tr>
-                  <td className="py-1.5 text-[#4B5563]">{t('lastCrop')}</td>
-                  <td className="py-1.5 font-medium text-[#0F172A] text-right">
-                    {lastCropKey ? t(lastCropKey) : t('noCropOnRecord')}
-                  </td>
-                </tr>
-                <tr>
-                  <td className="py-1.5 text-[#4B5563]">{t('beneficiaryType')}</td>
-                  <td className="py-1.5 font-medium text-[#0F172A] text-right capitalize">
-                    {profile.beneficiaryType === 'wua' ? 'Registered WUA' : 'Individual'}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <div className="space-y-1.5 text-sm">
+              <div className="flex justify-between">
+                <span className="text-[#4B5563]">{t('landId')}</span>
+                <span className="font-medium text-[#111827]">{profile.landId || '-'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#4B5563]">{t('landArea')}</span>
+                <span className="font-medium text-[#111827]">{profile.landArea ? `${profile.landArea} ${t('hectares')}` : '-'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#4B5563]">{t('lastCrop')}</span>
+                <span className="font-medium text-[#111827]">
+                  {lastCropKey ? t(lastCropKey) : t('noCropOnRecord')}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={() => navigate('/request')}
+            className="w-full bg-[#1B5E37] text-white rounded-2xl p-5 flex items-center justify-between hover:bg-[#154d2e] transition-colors"
+          >
+            <div className="flex items-start gap-3">
+              <Droplets size={28} className="text-white mt-0.5 flex-shrink-0" />
+              <div className="text-left">
+                <p className="text-lg font-semibold">{t('requestWater')}</p>
+                <p className="text-sm opacity-75 mt-0.5">{t('requestWaterSubtitle')}</p>
+              </div>
+            </div>
+            <ChevronRight size={22} className="text-white flex-shrink-0" />
+          </button>
+
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-semibold text-[#111827]">{t('myRequests')}</span>
+                {requests.length > 0 && (
+                  <span className="bg-[#E8F5EE] text-[#1B5E37] rounded-full text-xs font-semibold px-2 py-0.5">
+                    {requests.length}
+                  </span>
+                )}
+              </div>
+              {requests.length > 0 && (
+                <button
+                  onClick={() => navigate('/requests')}
+                  className="text-sm font-medium text-[#1B5E37] hover:underline"
+                >
+                  {t('viewAll')}
+                </button>
+              )}
+            </div>
+
+            {requests.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-[#D1D9D4] shadow-sm p-8 flex flex-col items-center text-center">
+                <FileText size={36} className="text-[#D1D9D4] mb-3" />
+                <p className="font-semibold text-[#111827]">{t('noRequests')}</p>
+                <p className="text-sm text-[#9CA3AF] mt-1">{t('noRequestsSubtitle')}</p>
+              </div>
+            ) : (
+              <div>
+                {latest3.map(req => (
+                  <RequestCard key={req.id} request={req} />
+                ))}
+              </div>
+            )}
           </div>
 
           <BillCard requests={requests} />
         </div>
 
-        <div className="bg-white rounded-lg border border-[#C7D0C9]">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-[#C7D0C9]">
-            <div className="flex items-center gap-2">
-              <FileText size={15} className="text-[#0D47A1]" />
-              <span className="text-sm font-semibold text-[#0F172A] uppercase tracking-wide">{t('myRequests')}</span>
-              {requests.length > 0 && (
-                <span className="bg-[#E3F2FD] text-[#0D47A1] rounded text-xs font-semibold px-1.5 py-0.5">
-                  {requests.length}
-                </span>
-              )}
-            </div>
-            {requests.length > 0 && (
-              <button
-                onClick={() => navigate('/requests')}
-                className="text-xs font-medium text-[#0D47A1] hover:underline"
-              >
-                {t('viewAll')}
-              </button>
-            )}
-          </div>
-
-          {sorted.length === 0 ? (
-            <div className="flex flex-col items-center py-12 text-center">
-              <FileText size={32} className="text-[#C7D0C9] mb-3" />
-              <p className="text-sm font-medium text-[#0F172A]">{t('noRequests')}</p>
-              <p className="text-xs text-[#6B7280] mt-1">{t('noRequestsSubtitle')}</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-[#F8FAFC] border-b border-[#C7D0C9]">
-                    <th className="text-left px-4 py-2.5 text-xs font-semibold text-[#4B5563] uppercase tracking-wide">{t('requestId')}</th>
-                    <th className="text-left px-4 py-2.5 text-xs font-semibold text-[#4B5563] uppercase tracking-wide">{t('crop')}</th>
-                    <th className="text-left px-4 py-2.5 text-xs font-semibold text-[#4B5563] uppercase tracking-wide">{t('season')}</th>
-                    <th className="text-left px-4 py-2.5 text-xs font-semibold text-[#4B5563] uppercase tracking-wide">{t('submittedOn')}</th>
-                    <th className="text-left px-4 py-2.5 text-xs font-semibold text-[#4B5563] uppercase tracking-wide">{t('paymentStatus')}</th>
-                    <th className="text-right px-4 py-2.5 text-xs font-semibold text-[#4B5563] uppercase tracking-wide">{t('billAmount')}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#F1F5F2]">
-                  {sorted.map(req => (
-                    <tr key={req.id} className="hover:bg-[#F8FAFC] transition-colors">
-                      <td className="px-4 py-3 font-mono text-xs text-[#4B5563]">{req.id}</td>
-                      <td className="px-4 py-3 font-medium text-[#0F172A]">{t(req.cropKey)}</td>
-                      <td className="px-4 py-3 text-[#4B5563]">{t(req.seasonKey)}</td>
-                      <td className="px-4 py-3 text-[#4B5563]">{req.date}</td>
-                      <td className="px-4 py-3"><StatusChip status={req.status} /></td>
-                      <td className="px-4 py-3 text-right font-semibold text-[#1B5E20]">{formatCurrency(req.billAmount)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+        <BottomNav active="dashboard" />
       </div>
-    </GovLayout>
+    </div>
   );
 }
