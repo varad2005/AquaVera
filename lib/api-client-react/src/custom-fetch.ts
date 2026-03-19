@@ -1,5 +1,6 @@
 export type CustomFetchOptions = RequestInit & {
   responseType?: "json" | "text" | "blob" | "auto";
+  getToken?: () => string | null | undefined | Promise<string | null | undefined>;
 };
 
 export type ErrorType<T = unknown> = ApiError<T>;
@@ -299,6 +300,15 @@ export async function customFetch<T = unknown>(
 
   if (responseType === "json" && !headers.has("accept")) {
     headers.set("accept", DEFAULT_JSON_ACCEPT);
+  }
+
+  // Handle dynamic token injection
+  const { getToken } = options;
+  if (getToken && !headers.has("authorization")) {
+    const token = await getToken();
+    if (token) {
+      headers.set("authorization", `Bearer ${token}`);
+    }
   }
 
   const requestInfo = { method, url: resolveUrl(input) };

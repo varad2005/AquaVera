@@ -17,42 +17,48 @@ export default function LoginPage() {
 
   const otpRefs = [useRef(), useRef(), useRef(), useRef()];
 
-  const handleSendOtp = () => {
+  const handleSendOtp = async () => {
     if (!/^\d{10}$/.test(phone)) {
       setPhoneError(t('invalidMobile'));
       return;
     }
     setPhoneError('');
-    setStep('otp');
-  };
-
-  const handleOtpChange = (idx, val) => {
-    if (!/^\d*$/.test(val)) return;
-    const newOtp = [...otp];
-    newOtp[idx] = val.slice(-1);
-    setOtp(newOtp);
-    if (val && idx < 3) {
-      otpRefs[idx + 1].current?.focus();
+    
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: `+91${phone}`, // Assuming Indian numbers as per context
+      });
+      if (error) throw error;
+      setStep('otp');
+    } catch (err) {
+      setPhoneError(err.message || 'Failed to send OTP');
     }
   };
 
-  const handleOtpKeyDown = (idx, e) => {
-    if (e.key === 'Backspace' && !otp[idx] && idx > 0) {
-      otpRefs[idx - 1].current?.focus();
-    }
-  };
-
-  const handleVerify = () => {
+  const handleVerify = async () => {
     const code = otp.join('');
     if (code.length !== 4) {
       setOtpError(t('invalidOtp'));
       return;
     }
     setOtpError('');
-    if (profile.isSetup) {
-      navigate('/dashboard');
-    } else {
-      navigate('/profile');
+    
+    try {
+      const { error, data: { session } } = await supabase.auth.verifyOtp({
+        phone: `+91${phone}`,
+        token: code,
+        type: 'sms',
+      });
+      
+      if (error) throw error;
+
+      if (profile.isSetup) {
+        navigate('/dashboard');
+      } else {
+        navigate('/profile');
+      }
+    } catch (err) {
+      setOtpError(err.message || 'Invalid OTP');
     }
   };
 

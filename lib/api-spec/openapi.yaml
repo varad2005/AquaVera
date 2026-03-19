@@ -10,6 +10,14 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: profile
+    description: Profile management
+  - name: requests
+    description: Water request management
+  - name: billing
+    description: Billing and invoices
 paths:
   /healthz:
     get:
@@ -24,7 +32,97 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /profile:
+    get:
+      operationId: getProfile
+      tags: [profile]
+      summary: Get current user profile
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Profile data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+    post:
+      operationId: updateProfile
+      tags: [profile]
+      summary: Update user profile
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProfileRequest"
+      responses:
+        "200":
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+  /requests:
+    get:
+      operationId: listRequests
+      tags: [requests]
+      summary: List user water requests
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WaterRequest"
+    post:
+      operationId: createRequest
+      tags: [requests]
+      summary: Create a new water request
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRequestRequest"
+      responses:
+        "201":
+          description: Request created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WaterRequest"
+  /billing:
+    get:
+      operationId: getBillingSummary
+      tags: [billing]
+      summary: Get user billing summary
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Billing summary
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Billing"
+
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     HealthStatus:
       type: object
@@ -33,4 +131,114 @@ components:
           type: string
       required:
         - status
+    Profile:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        aadhaar_last4:
+          type: string
+        land_id:
+          type: string
+        land_area:
+          type: number
+        beneficiary_type:
+          type: string
+          enum: [individual, wua]
+        water_source:
+          type: string
+      required:
+        - user_id
+        - name
+    UpdateProfileRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        aadhaar_last4:
+          type: string
+        land_id:
+          type: string
+        land_area:
+          type: number
+        beneficiary_type:
+          type: string
+          enum: [individual, wua]
+        water_source:
+          type: string
+    WaterRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        crop:
+          type: string
+        season:
+          type: string
+          enum: [kharif, rabi, hotWeather]
+        duration_days:
+          type: integer
+        land_area:
+          type: number
+        status:
+          type: string
+          enum: [pending, approved, rejected, completed]
+        bill_amount:
+          type: number
+      required:
+        - id
+        - user_id
+        - crop
+        - season
+        - duration_days
+        - land_area
+        - status
+    CreateRequestRequest:
+      type: object
+      properties:
+        crop:
+          type: string
+        season:
+          type: string
+          enum: [kharif, rabi, hotWeather]
+        duration_days:
+          type: integer
+        land_area:
+          type: number
+      required:
+        - crop
+        - season
+        - duration_days
+        - land_area
+    Billing:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        request_id:
+          type: string
+          format: uuid
+        amount:
+          type: number
+        paid:
+          type: boolean
+        paid_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - user_id
+        - amount
+        - paid
 

@@ -21,13 +21,29 @@ function Router() {
   );
 }
 
+function AppContent() {
+  const { loading } = useApp() || {};
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F4F6F4]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1B5E37]"></div>
+      </div>
+    );
+  }
+
+  return (
+    <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+      <Router />
+    </WouterRouter>
+  );
+}
+
 function App() {
   return (
     <LangProvider>
       <AppProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <Router />
-        </WouterRouter>
+        <AppContent />
       </AppProvider>
     </LangProvider>
   );
