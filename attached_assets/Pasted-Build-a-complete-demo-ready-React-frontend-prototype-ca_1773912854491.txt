@@ -1,0 +1,958 @@
+Build a complete, demo-ready React frontend prototype called "AquaVera" — an AI-powered irrigation water billing and crop verification platform for Indian farmers. No backend needed. Use only React with local component state and mock data. Use Tailwind CSS for styling. Use React Router for navigation. Use lucide-react for all icons — no emoji anywhere. All logic is simulated on the frontend.
+
+---
+
+## DESIGN SYSTEM
+
+Color Palette (CSS variables):
+- Primary: #1B5E37 (Deep Forest Green)
+- Primary Light: #E8F5EE
+- Secondary: #1565A8 (Government Blue)
+- Background: #F4F6F4
+- Surface: #FFFFFF
+- Border: #D1D9D4
+- Text Primary: #111827
+- Text Secondary: #4B5563
+- Text Muted: #9CA3AF
+- Success: #166534 | Success Light: #DCFCE7
+- Danger: #991B1B | Danger Light: #FEE2E2
+- Warning: #92400E | Warning Light: #FEF3C7
+
+Typography: Google Font "Noto Sans" (weights 400,500,600,700) — supports Latin + Devanagari scripts for Hindi and Marathi. Apply globally.
+
+Icons: Use lucide-react exclusively. Import individual icons. No emoji. No custom SVG components.
+Common icons to use:
+- Droplets (water/app logo)
+- Leaf (land/crop)
+- FileText (requests)
+- IndianRupee (billing)
+- CheckCircle (approved)
+- AlertTriangle (review)
+- Clock (pending)
+- ChevronRight
+- ArrowLeft
+- User
+- Home
+- Globe
+- Upload
+- Camera
+- MapPin
+- LogOut
+- Eye
+- Plus
+
+Components:
+- Cards: bg-white rounded-2xl border border-[#D1D9D4] shadow-sm p-5
+- Primary Button: bg-[#1B5E37] text-white rounded-xl px-6 py-3.5 font-semibold w-full hover:bg-[#154d2e] transition-colors
+- Secondary Button: bg-white border border-[#1B5E37] text-[#1B5E37] rounded-xl px-6 py-3.5 font-semibold
+- Inputs: w-full border border-[#D1D9D4] rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#1B5E37] bg-white
+- Labels: block text-sm font-medium text-[#4B5563] mb-1.5
+- Section headers: text-lg font-semibold text-[#111827] mb-4
+- Status chips: rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide
+- No gradients. No heavy shadows. Clean flat government UI. Max-width 480px centered.
+
+---
+
+## MULTILINGUAL SYSTEM — THREE LANGUAGES
+
+Language options: English (en), Marathi (mr), Hindi (hi)
+Language toggle cycles: EN → MR → HI → EN
+Every single string in the entire app must come through t(key). Zero hardcoded text in JSX.
+
+Create /context/LangContext.jsx:
+```jsx
+import { createContext, useContext, useState } from 'react';
+
+const translations = {
+  en: {
+    appName: "AquaVera",
+    appTagline: "Irrigation Water Management Platform",
+    langLabel: "EN",
+    langNext: "Switch to Marathi",
+
+    loginTitle: "Welcome to AquaVera",
+    loginSubtitle: "Enter your mobile number to continue",
+    mobileLabel: "Mobile Number",
+    mobilePlaceholder: "Enter 10-digit mobile number",
+    sendOtp: "Send OTP",
+    otpTitle: "Verify OTP",
+    otpSubtitle: "Enter the 4-digit code sent to",
+    otpLabel: "One-Time Password",
+    verifyOtp: "Verify & Continue",
+    resendOtp: "Resend OTP",
+    changeMobile: "Change Number",
+    invalidMobile: "Enter a valid 10-digit mobile number",
+    invalidOtp: "Enter a valid 4-digit OTP",
+
+    profileSetupTitle: "Complete Your Profile",
+    profileSetupSubtitle: "Required for billing and verification",
+    fullNameLabel: "Full Name",
+    fullNamePlaceholder: "Enter your full name",
+    aadhaarLabel: "Aadhaar Last 4 Digits",
+    aadhaarPlaceholder: "Enter last 4 digits",
+    landIdLabel: "Land ID (7/12 Number)",
+    landIdPlaceholder: "e.g. MH-PU-7/12-00123",
+    landAreaLabel: "Land Area (Hectares)",
+    landAreaPlaceholder: "e.g. 2.5",
+    beneficiaryTypeLabel: "Beneficiary Type",
+    waterSourceLabel: "Water Source",
+    registeredWUA: "Registered Water User Association",
+    individualBeneficiary: "Individual Beneficiary",
+    assuredMajorReservoir: "Assured Supply - Major Reservoir",
+    assuredMediumCanal: "Assured Supply - Medium Canal / Storage Tank",
+    regulatedWithLoss: "Regulated Supply with Transmission Losses",
+    partlyRegulated: "Partly Regulated Supply",
+    userMaintainedReservoir: "User-Maintained Reservoir / Bhandara",
+    saveProfile: "Save and Continue",
+    profileRequired: "All fields are required",
+    invalidAadhaar: "Enter valid last 4 digits",
+
+    dashboardTitle: "Dashboard",
+    greeting: "Good morning",
+    landSummary: "Land Details",
+    landId: "Land ID",
+    landArea: "Land Area",
+    lastCrop: "Last Crop",
+    noCropOnRecord: "No crop on record",
+    requestWater: "Request Irrigation Water",
+    requestWaterSubtitle: "Submit a new water request",
+    myRequests: "My Requests",
+    noRequests: "No requests yet",
+    noRequestsSubtitle: "Submit your first water request to begin",
+    billingSummary: "Billing Summary",
+    totalBill: "Total Bill",
+    totalPaid: "Amount Paid",
+    totalUnpaid: "Amount Pending",
+    viewAll: "View All",
+
+    requestFormTitle: "New Water Request",
+    cropTypeLabel: "Crop Type",
+    cropTypePlaceholder: "Select crop type",
+    seasonLabel: "Season",
+    durationLabel: "Duration (Days)",
+    durationPlaceholder: "Number of irrigation days",
+    durationHelper: "Enter total number of irrigation days required",
+    selectedLand: "Selected Land",
+    uploadPhotoLabel: "Crop Field Photo",
+    uploadPhotoHelper: "Capture or upload a photo for AI verification",
+    openCamera: "Open Camera",
+    uploadFromGallery: "Upload from Gallery",
+    changePhoto: "Change Photo",
+    geoTagLabel: "Location",
+    geoTagValue: "Pune, Maharashtra",
+    geoTagNote: "Auto-detected from device",
+    billPreviewTitle: "Estimated Bill",
+    billPreviewNote: "Final amount may vary after officer verification",
+    rateApplied: "Rate Applied",
+    perHectare: "per hectare",
+    submitRequest: "Submit Request",
+    cropRequired: "Please select a crop type",
+    seasonRequired: "Please select a season",
+    durationRequired: "Please enter number of days",
+
+    foodGrains: "Food Grains and Other Crops",
+    sugarcane: "Sugarcane",
+    banana: "Banana",
+    cotton: "Cotton",
+    horticulture: "Horticulture",
+
+    kharif: "Kharif",
+    rabi: "Rabi",
+    hotWeather: "Hot Weather",
+
+    aiVerifyingTitle: "Verifying Your Request",
+    aiVerifyingSubtitle: "AI is analyzing your crop field photo. Please wait.",
+
+    approvedTitle: "Request Approved",
+    approvedMessage: "Your irrigation water request has been verified and approved.",
+    reviewTitle: "Under Review",
+    reviewMessage: "Your request requires manual verification. An officer will review it within 2 working days.",
+    estimatedBill: "Estimated Bill",
+    goToDashboard: "Go to Dashboard",
+
+    statusApproved: "Approved",
+    statusPending: "Pending",
+    statusNeedsReview: "Under Review",
+
+    navDashboard: "Dashboard",
+    navRequests: "Requests",
+    navBilling: "Billing",
+
+    billingTitle: "Billing",
+    requestId: "Request ID",
+    crop: "Crop",
+    season: "Season",
+    duration: "Duration",
+    days: "days",
+    amount: "Amount",
+    paymentStatus: "Payment",
+    paid: "Paid",
+    unpaid: "Pending",
+    noBillingRecords: "No billing records found",
+    hectares: "ha",
+    beneficiaryType: "Beneficiary Type",
+    waterSource: "Water Source",
+
+    requestsTitle: "All Requests",
+    submittedOn: "Submitted",
+    billAmount: "Bill Amount",
+    fieldRequired: "This field is required"
+  },
+
+  mr: {
+    appName: "एक्वाव्हेरा",
+    appTagline: "सिंचन जल व्यवस्थापन प्रणाली",
+    langLabel: "मराठी",
+    langNext: "हिंदीवर स्विच करा",
+
+    loginTitle: "एक्वाव्हेरामध्ये आपले स्वागत आहे",
+    loginSubtitle: "पुढे जाण्यासाठी आपला मोबाइल नंबर टाका",
+    mobileLabel: "मोबाइल नंबर",
+    mobilePlaceholder: "१०-अंकी मोबाइल नंबर टाका",
+    sendOtp: "OTP पाठवा",
+    otpTitle: "OTP तपासा",
+    otpSubtitle: "यावर पाठवलेला ४-अंकी कोड टाका",
+    otpLabel: "वन-टाइम पासवर्ड",
+    verifyOtp: "तपासा आणि पुढे जा",
+    resendOtp: "OTP पुन्हा पाठवा",
+    changeMobile: "नंबर बदला",
+    invalidMobile: "वैध १०-अंकी मोबाइल नंबर टाका",
+    invalidOtp: "वैध ४-अंकी OTP टाका",
+
+    profileSetupTitle: "आपली प्रोफाइल पूर्ण करा",
+    profileSetupSubtitle: "बिलिंग आणि तपासणीसाठी आवश्यक",
+    fullNameLabel: "पूर्ण नाव",
+    fullNamePlaceholder: "आपले पूर्ण नाव टाका",
+    aadhaarLabel: "आधार शेवटचे ४ अंक",
+    aadhaarPlaceholder: "शेवटचे ४ अंक टाका",
+    landIdLabel: "जमीन ID (७/१२ क्रमांक)",
+    landIdPlaceholder: "उदा. MH-PU-7/12-00123",
+    landAreaLabel: "जमीन क्षेत्र (हेक्टर)",
+    landAreaPlaceholder: "उदा. २.५",
+    beneficiaryTypeLabel: "लाभार्थी प्रकार",
+    waterSourceLabel: "पाण्याचा स्रोत",
+    registeredWUA: "नोंदणीकृत जलवापर संस्था",
+    individualBeneficiary: "वैयक्तिक लाभार्थी",
+    assuredMajorReservoir: "निश्चित पुरवठा - मोठे धरण",
+    assuredMediumCanal: "निश्चित पुरवठा - मध्यम कालवा / साठवण तलाव",
+    regulatedWithLoss: "नियमित पुरवठा - संप्रेषण तोट्यांसह",
+    partlyRegulated: "अंशतः नियमित पुरवठा",
+    userMaintainedReservoir: "वापरकर्त्याने देखभाल केलेले धरण / बंधारा",
+    saveProfile: "जतन करा आणि पुढे जा",
+    profileRequired: "सर्व माहिती आवश्यक आहे",
+    invalidAadhaar: "वैध शेवटचे ४ अंक टाका",
+
+    dashboardTitle: "डॅशबोर्ड",
+    greeting: "सुप्रभात",
+    landSummary: "जमीन तपशील",
+    landId: "जमीन ID",
+    landArea: "जमीन क्षेत्र",
+    lastCrop: "शेवटचे पीक",
+    noCropOnRecord: "पिकाची माहिती नाही",
+    requestWater: "सिंचन पाण्याची मागणी करा",
+    requestWaterSubtitle: "नवीन पाण्याची मागणी सबमिट करा",
+    myRequests: "माझ्या मागण्या",
+    noRequests: "अद्याप मागण्या नाहीत",
+    noRequestsSubtitle: "सुरुवात करण्यासाठी पहिली मागणी सबमिट करा",
+    billingSummary: "बिल सारांश",
+    totalBill: "एकूण बिल",
+    totalPaid: "भरलेली रक्कम",
+    totalUnpaid: "बाकी रक्कम",
+    viewAll: "सर्व पहा",
+
+    requestFormTitle: "नवीन पाण्याची मागणी",
+    cropTypeLabel: "पिकाचा प्रकार",
+    cropTypePlaceholder: "पिकाचा प्रकार निवडा",
+    seasonLabel: "हंगाम",
+    durationLabel: "कालावधी (दिवस)",
+    durationPlaceholder: "सिंचन दिवसांची संख्या",
+    durationHelper: "आवश्यक एकूण सिंचन दिवस टाका",
+    selectedLand: "निवडलेली जमीन",
+    uploadPhotoLabel: "पीक क्षेत्राचा फोटो",
+    uploadPhotoHelper: "AI तपासणीसाठी फोटो काढा किंवा अपलोड करा",
+    openCamera: "कॅमेरा उघडा",
+    uploadFromGallery: "गॅलरीतून अपलोड करा",
+    changePhoto: "फोटो बदला",
+    geoTagLabel: "स्थान",
+    geoTagValue: "पुणे, महाराष्ट्र",
+    geoTagNote: "डिव्हाइसवरून आपोआप शोधले",
+    billPreviewTitle: "अंदाजे बिल",
+    billPreviewNote: "अधिकारी तपासणीनंतर अंतिम रक्कम बदलू शकते",
+    rateApplied: "लागू दर",
+    perHectare: "प्रति हेक्टर",
+    submitRequest: "मागणी सबमिट करा",
+    cropRequired: "कृपया पिकाचा प्रकार निवडा",
+    seasonRequired: "कृपया हंगाम निवडा",
+    durationRequired: "कृपया दिवसांची संख्या टाका",
+
+    foodGrains: "अन्नधान्य आणि इतर पिके",
+    sugarcane: "ऊस",
+    banana: "केळी",
+    cotton: "कापूस",
+    horticulture: "फलोत्पादन",
+
+    kharif: "खरीप",
+    rabi: "रब्बी",
+    hotWeather: "उन्हाळी",
+
+    aiVerifyingTitle: "आपली मागणी तपासली जात आहे",
+    aiVerifyingSubtitle: "AI आपल्या पीक क्षेत्राच्या फोटोचे विश्लेषण करत आहे. कृपया थांबा.",
+
+    approvedTitle: "मागणी मंजूर",
+    approvedMessage: "आपली सिंचन पाण्याची मागणी AI प्रणालीद्वारे तपासली आणि मंजूर केली गेली आहे.",
+    reviewTitle: "पुनरावलोकनाधीन",
+    reviewMessage: "आपली मागणी मॅन्युअल तपासणीसाठी पाठवण्यात आली आहे. एक अधिकारी २ कामकाजाच्या दिवसांत तपासेल.",
+    estimatedBill: "अंदाजे बिल",
+    goToDashboard: "डॅशबोर्डवर जा",
+
+    statusApproved: "मंजूर",
+    statusPending: "प्रलंबित",
+    statusNeedsReview: "पुनरावलोकनाधीन",
+
+    navDashboard: "डॅशबोर्ड",
+    navRequests: "मागण्या",
+    navBilling: "बिलिंग",
+
+    billingTitle: "बिलिंग",
+    requestId: "मागणी ID",
+    crop: "पीक",
+    season: "हंगाम",
+    duration: "कालावधी",
+    days: "दिवस",
+    amount: "रक्कम",
+    paymentStatus: "देयक",
+    paid: "भरलेले",
+    unpaid: "बाकी",
+    noBillingRecords: "बिलिंग नोंदी आढळल्या नाहीत",
+    hectares: "हे",
+    beneficiaryType: "लाभार्थी प्रकार",
+    waterSource: "पाण्याचा स्रोत",
+
+    requestsTitle: "सर्व मागण्या",
+    submittedOn: "सबमिट केलेली तारीख",
+    billAmount: "बिलाची रक्कम",
+    fieldRequired: "हे क्षेत्र आवश्यक आहे"
+  },
+
+  hi: {
+    appName: "एक्वावेरा",
+    appTagline: "सिंचाई जल प्रबंधन प्रणाली",
+    langLabel: "हिंदी",
+    langNext: "Switch to English",
+
+    loginTitle: "एक्वावेरा में आपका स्वागत है",
+    loginSubtitle: "जारी रखने के लिए अपना मोबाइल नंबर दर्ज करें",
+    mobileLabel: "मोबाइल नंबर",
+    mobilePlaceholder: "10 अंकों का मोबाइल नंबर दर्ज करें",
+    sendOtp: "OTP भेजें",
+    otpTitle: "OTP सत्यापित करें",
+    otpSubtitle: "इस पर भेजा गया 4 अंकों का कोड दर्ज करें",
+    otpLabel: "वन-टाइम पासवर्ड",
+    verifyOtp: "सत्यापित करें और जारी रखें",
+    resendOtp: "OTP पुनः भेजें",
+    changeMobile: "नंबर बदलें",
+    invalidMobile: "वैध 10 अंकों का मोबाइल नंबर दर्ज करें",
+    invalidOtp: "वैध 4 अंकों का OTP दर्ज करें",
+
+    profileSetupTitle: "अपनी प्रोफ़ाइल पूर्ण करें",
+    profileSetupSubtitle: "बिलिंग और सत्यापन के लिए आवश्यक",
+    fullNameLabel: "पूरा नाम",
+    fullNamePlaceholder: "अपना पूरा नाम दर्ज करें",
+    aadhaarLabel: "आधार के अंतिम 4 अंक",
+    aadhaarPlaceholder: "अंतिम 4 अंक दर्ज करें",
+    landIdLabel: "भूमि ID (7/12 संख्या)",
+    landIdPlaceholder: "उदा. MH-PU-7/12-00123",
+    landAreaLabel: "भूमि क्षेत्र (हेक्टेयर)",
+    landAreaPlaceholder: "उदा. 2.5",
+    beneficiaryTypeLabel: "लाभार्थी प्रकार",
+    waterSourceLabel: "जल स्रोत",
+    registeredWUA: "पंजीकृत जल उपयोगकर्ता संघ",
+    individualBeneficiary: "व्यक्तिगत लाभार्थी",
+    assuredMajorReservoir: "सुनिश्चित आपूर्ति - प्रमुख जलाशय",
+    assuredMediumCanal: "सुनिश्चित आपूर्ति - मध्यम नहर / भंडारण टैंक",
+    regulatedWithLoss: "संचरण हानि सहित नियमित आपूर्ति",
+    partlyRegulated: "आंशिक रूप से नियमित आपूर्ति",
+    userMaintainedReservoir: "उपयोगकर्ता-अनुरक्षित जलाशय / बंधारा",
+    saveProfile: "सहेजें और जारी रखें",
+    profileRequired: "सभी फ़ील्ड आवश्यक हैं",
+    invalidAadhaar: "वैध अंतिम 4 अंक दर्ज करें",
+
+    dashboardTitle: "डैशबोर्ड",
+    greeting: "सुप्रभात",
+    landSummary: "भूमि विवरण",
+    landId: "भूमि ID",
+    landArea: "भूमि क्षेत्र",
+    lastCrop: "अंतिम फसल",
+    noCropOnRecord: "कोई फसल दर्ज नहीं",
+    requestWater: "सिंचाई जल का अनुरोध करें",
+    requestWaterSubtitle: "नया जल अनुरोध सबमिट करें",
+    myRequests: "मेरे अनुरोध",
+    noRequests: "अभी तक कोई अनुरोध नहीं",
+    noRequestsSubtitle: "शुरू करने के लिए अपना पहला जल अनुरोध सबमिट करें",
+    billingSummary: "बिलिंग सारांश",
+    totalBill: "कुल बिल",
+    totalPaid: "भुगतान की गई राशि",
+    totalUnpaid: "बकाया राशि",
+    viewAll: "सभी देखें",
+
+    requestFormTitle: "नया जल अनुरोध",
+    cropTypeLabel: "फसल का प्रकार",
+    cropTypePlaceholder: "फसल का प्रकार चुनें",
+    seasonLabel: "मौसम",
+    durationLabel: "अवधि (दिन)",
+    durationPlaceholder: "सिंचाई दिनों की संख्या",
+    durationHelper: "आवश्यक कुल सिंचाई दिन दर्ज करें",
+    selectedLand: "चयनित भूमि",
+    uploadPhotoLabel: "फसल क्षेत्र फोटो",
+    uploadPhotoHelper: "AI सत्यापन के लिए फोटो लें या अपलोड करें",
+    openCamera: "कैमरा खोलें",
+    uploadFromGallery: "गैलरी से अपलोड करें",
+    changePhoto: "फोटो बदलें",
+    geoTagLabel: "स्थान",
+    geoTagValue: "पुणे, महाराष्ट्र",
+    geoTagNote: "डिवाइस से स्वतः पहचाना गया",
+    billPreviewTitle: "अनुमानित बिल",
+    billPreviewNote: "अधिकारी सत्यापन के बाद अंतिम राशि भिन्न हो सकती है",
+    rateApplied: "लागू दर",
+    perHectare: "प्रति हेक्टेयर",
+    submitRequest: "अनुरोध सबमिट करें",
+    cropRequired: "कृपया फसल का प्रकार चुनें",
+    seasonRequired: "कृपया मौसम चुनें",
+    durationRequired: "कृपया दिनों की संख्या दर्ज करें",
+
+    foodGrains: "खाद्यान्न और अन्य फसलें",
+    sugarcane: "गन्ना",
+    banana: "केला",
+    cotton: "कपास",
+    horticulture: "बागवानी",
+
+    kharif: "खरीफ",
+    rabi: "रबी",
+    hotWeather: "गर्म मौसम",
+
+    aiVerifyingTitle: "आपका अनुरोध सत्यापित हो रहा है",
+    aiVerifyingSubtitle: "AI आपके फसल क्षेत्र की फोटो का विश्लेषण कर रहा है। कृपया प्रतीक्षा करें।",
+
+    approvedTitle: "अनुरोध स्वीकृत",
+    approvedMessage: "आपका सिंचाई जल अनुरोध AI प्रणाली द्वारा सत्यापित और स्वीकृत किया गया है।",
+    reviewTitle: "समीक्षाधीन",
+    reviewMessage: "आपका अनुरोध मैन्युअल सत्यापन के लिए भेजा गया है। एक अधिकारी 2 कार्य दिवसों में इसकी समीक्षा करेगा।",
+    estimatedBill: "अनुमानित बिल",
+    goToDashboard: "डैशबोर्ड पर जाएं",
+
+    statusApproved: "स्वीकृत",
+    statusPending: "लंबित",
+    statusNeedsReview: "समीक्षाधीन",
+
+    navDashboard: "डैशबोर्ड",
+    navRequests: "अनुरोध",
+    navBilling: "बिलिंग",
+
+    billingTitle: "बिलिंग",
+    requestId: "अनुरोध ID",
+    crop: "फसल",
+    season: "मौसम",
+    duration: "अवधि",
+    days: "दिन",
+    amount: "राशि",
+    paymentStatus: "भुगतान",
+    paid: "भुगतान किया",
+    unpaid: "बकाया",
+    noBillingRecords: "कोई बिलिंग रिकॉर्ड नहीं मिला",
+    hectares: "हे",
+    beneficiaryType: "लाभार्थी प्रकार",
+    waterSource: "जल स्रोत",
+
+    requestsTitle: "सभी अनुरोध",
+    submittedOn: "सबमिट किया",
+    billAmount: "बिल राशि",
+    fieldRequired: "यह फ़ील्ड आवश्यक है"
+  }
+};
+
+const LangContext = createContext();
+
+export function LangProvider({ children }) {
+  const [lang, setLang] = useState('en');
+  const cycleLang = () => setLang(prev => prev === 'en' ? 'mr' : prev === 'mr' ? 'hi' : 'en');
+  const t = (key) => translations[lang][key] || key;
+  return (
+    <LangContext.Provider value={{ lang, cycleLang, t }}>
+      {children}
+    </LangContext.Provider>
+  );
+}
+
+export const useLang = () => useContext(LangContext);
+```
+
+---
+
+## BILLING RATES — EXACT FROM GOVERNMENT TARIFF DOCUMENT
+
+### Table 1: Volumetric Rates for Flow Irrigation (Paise/cum = Rs/1000L)
+These rates are for REGISTERED WATER USER ASSOCIATIONS (beneficiaryType === 'wua'):
+- Kharif: Rs 5.50/cum | Rabi: Rs 11.00/cum | Hot Weather: Rs 16.50/cum
+For INDIVIDUAL BENEFICIARY (beneficiaryType === 'individual'):
+- Kharif: Rs 7.00/cum | Rabi: Rs 14.00/cum | Hot Weather: Rs 21.00/cum
+
+### Table 2: Bulk Water Tariff for Private Lift Irrigation (Paise/cum)
+These apply when waterSource is set. Use these rates based on waterSource key:
+- assuredMajor: Kharif 6.50, Rabi 13.00, HotWeather 19.50
+- assuredMedium: Kharif 5.00, Rabi 10.00, HotWeather 15.00
+- regulatedLoss: Kharif 5.00, Rabi 10.00, HotWeather 15.00
+- partlyRegulated: Kharif 2.50, Rabi 5.00, HotWeather 7.50
+- userMaintained: Kharif 0.80, Rabi 1.60, HotWeather 2.40
+
+### Table 3: Area-based Bulk Water Tariff for Flow Irrigation (Rs/Ha)
+These are the AREA-BASED rates per hectare per season:
+- foodGrains: Kharif 600, Rabi 1200, HotWeather 1800
+- sugarcane: Kharif 1890, Rabi 3780, HotWeather 5670
+- banana: Kharif 1890, Rabi 3780, HotWeather 5670 (same as sugarcane — Cash Crops)
+- cotton: Kharif 810, Rabi 1620, HotWeather 2430
+- horticulture: Kharif 1422, Rabi 2844, HotWeather 4266
+
+### Billing Logic Implementation in /utils/billing.js:
+```js
+// Table 3: Area-based rates Rs/Ha
+export const AREA_RATES = {
+  foodGrains: { kharif: 600, rabi: 1200, hotWeather: 1800 },
+  sugarcane:  { kharif: 1890, rabi: 3780, hotWeather: 5670 },
+  banana:     { kharif: 1890, rabi: 3780, hotWeather: 5670 },
+  cotton:     { kharif: 810, rabi: 1620, hotWeather: 2430 },
+  horticulture: { kharif: 1422, rabi: 2844, hotWeather: 4266 }
+};
+
+// Table 1: Volumetric rates Rs/cum for flow irrigation
+export const VOLUMETRIC_RATES_WUA = { kharif: 5.50, rabi: 11.00, hotWeather: 16.50 };
+export const VOLUMETRIC_RATES_INDIVIDUAL = { kharif: 7.00, rabi: 14.00, hotWeather: 21.00 };
+
+// Table 2: Bulk lift irrigation rates Rs/cum
+export const LIFT_RATES = {
+  assuredMajor:     { kharif: 6.50, rabi: 13.00, hotWeather: 19.50 },
+  assuredMedium:    { kharif: 5.00, rabi: 10.00, hotWeather: 15.00 },
+  regulatedLoss:    { kharif: 5.00, rabi: 10.00, hotWeather: 15.00 },
+  partlyRegulated:  { kharif: 2.50, rabi: 5.00,  hotWeather: 7.50  },
+  userMaintained:   { kharif: 0.80, rabi: 1.60,  hotWeather: 2.40  }
+};
+
+// Primary billing function — uses Table 3 area-based rates
+// Bill = Rate (Rs/Ha) * landArea (Ha)
+// Duration is informational only for area-based billing (one rate per season regardless)
+export function calculateAreaBill(cropKey, seasonKey, landArea) {
+  const cropRates = AREA_RATES[cropKey];
+  if (!cropRates) return 0;
+  const rate = cropRates[seasonKey] || 0;
+  return parseFloat((rate * Number(landArea)).toFixed(2));
+}
+
+// Returns the rate per hectare for display
+export function getAreaRate(cropKey, seasonKey) {
+  return AREA_RATES[cropKey]?.[seasonKey] || 0;
+}
+
+export function formatCurrency(amount) {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: 2
+  }).format(amount);
+}
+```
+
+Display in bill preview:
+- Show: Rate Rs [getAreaRate(crop, season)] / hectare
+- Show: Land Area: [landArea] hectares
+- Show: Estimated Bill = formatCurrency(calculateAreaBill(crop, season, landArea))
+
+---
+
+## APP STATE — /context/AppContext.jsx
+
+Initial mock requests — store cropKey and seasonKey as keys, not translated strings:
+```js
+const initialRequests = [
+  {
+    id: "REQ-2025-001",
+    cropKey: "sugarcane",
+    seasonKey: "kharif",
+    duration: 30,
+    landArea: 2.5,
+    imageUrl: null,
+    status: "Approved",
+    billAmount: 4725.00,
+    paid: true,
+    date: "2025-05-10",
+    beneficiaryType: "wua",
+    waterSource: null
+  },
+  {
+    id: "REQ-2025-002",
+    cropKey: "wheat",
+    seasonKey: "rabi",
+    duration: 20,
+    landArea: 2.5,
+    imageUrl: null,
+    status: "Needs Review",
+    billAmount: 3000.00,
+    paid: false,
+    date: "2025-06-01",
+    beneficiaryType: "individual",
+    waterSource: null
+  },
+  {
+    id: "REQ-2025-003",
+    cropKey: "cotton",
+    seasonKey: "kharif",
+    duration: 15,
+    landArea: 2.5,
+    imageUrl: null,
+    status: "Pending",
+    billAmount: 2025.00,
+    paid: false,
+    date: "2025-06-10",
+    beneficiaryType: "wua",
+    waterSource: null
+  }
+];
+```
+
+Note: "wheat" should be treated as "foodGrains" for billing since it falls under food grains category. Map wheat/rice/jowar/bajra/soybean all to "foodGrains" key for billing rate lookup. Store the display crop separately from the billing key.
+
+Expose: profile, setProfile, requests, addRequest.
+
+---
+
+## PROFILE FIELDS — Extended for Correct Billing
+
+Profile must include:
+- name, aadhaar, landId, landArea (in hectares), isSetup
+- beneficiaryType: "wua" (Registered Water User Association) OR "individual"
+- waterSource: null or one of: "assuredMajor", "assuredMedium", "regulatedLoss", "partlyRegulated", "userMaintained"
+  (waterSource is only relevant for lift irrigation — show this field only if beneficiaryType is "individual")
+
+ProfileSetupPage fields:
+1. Full Name
+2. Aadhaar Last 4 Digits
+3. Land ID
+4. Land Area (in hectares) — label clearly says hectares
+5. Beneficiary Type — radio/toggle: [Registered WUA] [Individual Beneficiary]
+6. Water Source (show only if individual selected) — dropdown with 5 options from LIFT_RATES keys
+
+---
+
+## FOLDER STRUCTURE
+
+/src
+  /context
+    LangContext.jsx
+    AppContext.jsx
+  /utils
+    billing.js
+  /components
+    Header.jsx
+    BottomNav.jsx
+    StatusChip.jsx
+    RequestCard.jsx
+    BillCard.jsx
+  /pages
+    LoginPage.jsx
+    ProfileSetupPage.jsx
+    DashboardPage.jsx
+    RequestFormPage.jsx
+    RequestsPage.jsx
+    BillingPage.jsx
+  App.jsx
+  main.jsx
+
+---
+
+## SCREEN 1 — LoginPage.jsx (Route: "/")
+
+Full-screen centered, white bg, max-w-sm mx-auto.
+
+Top: Droplets icon (size 40, color #1B5E37) + t('appName') text-3xl font-bold text-[#1B5E37]
+Below: t('appTagline') text-sm text-[#9CA3AF] text-center
+
+Lang toggle: top-right corner, Globe icon + t('langLabel') small button, onClick cycleLang(). Cycles EN → MR → HI → EN. All screen text changes instantly.
+
+Step 1 — Phone:
+- Label: t('mobileLabel')
+- Input type="tel" maxLength=10 placeholder=t('mobilePlaceholder')
+- Primary button: t('sendOtp')
+- Inline error: t('invalidMobile') text-xs text-[#991B1B] if invalid
+
+Step 2 — OTP (state change, no page reload):
+- Heading: t('otpTitle')
+- Subtext: t('otpSubtitle') [phoneNumber]
+- 4 individual input boxes, each w-12 h-12, text-center text-xl border rounded-xl, auto-focus next on input, backspace returns to previous
+- Primary button: t('verifyOtp')
+- Text links below: t('resendOtp') | t('changeMobile')
+- Mock: accept any 4-digit OTP
+- On verify → profile.isSetup ? navigate('/dashboard') : navigate('/profile')
+
+---
+
+## SCREEN 2 — ProfileSetupPage.jsx (Route: "/profile")
+
+Header: t('profileSetupTitle'), no back button first time.
+Subtitle: t('profileSetupSubtitle') text-sm text-muted
+
+Fields:
+1. t('fullNameLabel') → text
+2. t('aadhaarLabel') → number maxLength=4
+3. t('landIdLabel') → text
+4. t('landAreaLabel') → number, placeholder=t('landAreaPlaceholder') — clearly labeled in hectares
+5. t('beneficiaryTypeLabel') → two toggle buttons: t('registeredWUA') | t('individualBeneficiary')
+   - Selected: bg-[#1B5E37] text-white | Unselected: bg-white border text-[#4B5563]
+6. t('waterSourceLabel') — show ONLY if beneficiaryType === 'individual':
+   - Native select, placeholder=t('cropTypePlaceholder')
+   - Options: assuredMajor, assuredMedium, regulatedLoss, partlyRegulated, userMaintained → display t() of each key
+
+Save button: t('saveProfile') sticky bottom primary.
+Validation inline. On save: setProfile + navigate('/dashboard').
+All labels/buttons/options update on lang switch.
+
+---
+
+## SCREEN 3 — DashboardPage.jsx (Route: "/dashboard")
+
+Header: left = Droplets icon + t('appName') in green. Right = Globe icon + t('langLabel') button cycling langs.
+Below header: t('greeting'), [profile.name] — text-xl font-semibold
+
+Section 1 — Land Summary Card:
+Left border accent #1B5E37. Leaf icon + t('landSummary').
+Rows: t('landId'): profile.landId | t('landArea'): profile.landArea t('hectares') | t('lastCrop'): t(lastCropKey) or t('noCropOnRecord')
+
+Section 2 — Request Water CTA Card:
+bg-[#1B5E37] text-white rounded-2xl p-5.
+Left: Droplets icon (white, 28px) + t('requestWater') text-lg font-semibold + t('requestWaterSubtitle') text-sm opacity-75
+Right: ChevronRight icon white
+Full card clickable → navigate('/request')
+
+Section 3 — My Requests:
+Header row: t('myRequests') + count badge + t('viewAll') → navigate('/requests')
+Map latest 3 requests → RequestCard each
+Empty state: FileText icon + t('noRequests') + t('noRequestsSubtitle')
+
+Section 4 — Billing Summary (BillCard):
+IndianRupee icon + t('billingSummary')
+Rows: t('totalBill') | t('totalPaid') text-[#166534] | t('totalUnpaid') text-[#991B1B]
+All values via formatCurrency(). Computed from requests array.
+
+BottomNav: Home | FileText | IndianRupee icons + t('navDashboard') | t('navRequests') | t('navBilling')
+Active tab: text-[#1B5E37] border-t-2 border-[#1B5E37]
+
+---
+
+## SCREEN 4 — RequestFormPage.jsx (Route: "/request")
+
+Header: ArrowLeft back + t('requestFormTitle'). Lang toggle top-right.
+
+Form:
+
+1. Crop Type — t('cropTypeLabel'):
+Native select, placeholder option t('cropTypePlaceholder') value="".
+Options with keys and t() display:
+- foodGrains (→ t('foodGrains'))
+- sugarcane (→ t('sugarcane'))
+- banana (→ t('banana'))
+- cotton (→ t('cotton'))
+- horticulture (→ t('horticulture'))
+When lang cycles, all option labels switch instantly.
+
+2. Season — t('seasonLabel'):
+3-button toggle row, full width:
+- kharif → t('kharif') | rabi → t('rabi') | hotWeather → t('hotWeather')
+Selected: bg-[#1B5E37] text-white rounded-xl | Unselected: bg-white border rounded-xl
+When lang cycles, button labels switch instantly.
+
+3. Duration — t('durationLabel'):
+Number input, placeholder=t('durationPlaceholder'), min=1, max=365
+Helper: t('durationHelper') text-xs text-muted
+(Duration is informational — area-based billing does not multiply by duration but record it for officer reference)
+
+4. Selected Land (read-only card):
+Label: t('selectedLand')
+Shows: profile.landId | profile.landArea t('hectares') | t(profile.beneficiaryType key)
+
+5. Crop Field Photo — t('uploadPhotoLabel'):
+Helper: t('uploadPhotoHelper') text-xs text-muted
+Two side-by-side buttons:
+  - Camera icon + t('openCamera') — input type="file" accept="image/*" capture="environment" hidden, triggered on click
+  - Upload icon + t('uploadFromGallery') — input type="file" accept="image/*" hidden, triggered on click
+After photo selected: show full-width image preview rounded-xl max-h-52 object-cover + small t('changePhoto') text link below
+Below photo area: MapPin icon + t('geoTagLabel'): t('geoTagValue') — text-xs text-muted + t('geoTagNote') text-xs text-muted
+
+6. Bill Preview (conditional — show when cropKey and seasonKey are both selected):
+bg-[#E8F5EE] border border-[#1B5E37] rounded-2xl p-4
+t('billPreviewTitle') text-sm font-medium text-[#4B5563] uppercase tracking-wide
+Bill amount: formatCurrency(calculateAreaBill(cropKey, seasonKey, profile.landArea)) — text-2xl font-bold text-[#1B5E37]
+Below: t('rateApplied'): Rs [getAreaRate(cropKey, seasonKey)] t('perHectare') — text-xs text-muted
+t('billPreviewNote') text-xs text-muted
+Update with useEffect on cropKey or seasonKey change.
+
+Validation errors: text-xs text-[#991B1B] below each field using t('cropRequired') etc.
+
+Submit button: t('submitRequest') — sticky bottom, primary, full-width.
+
+On submit (all valid):
+
+PHASE 1 — Full-screen overlay (fixed inset-0 bg-white z-50 flex flex-col items-center justify-center):
+- CSS spinner: w-12 h-12 rounded-full border-4 border-[#E8F5EE] border-t-[#1B5E37] animate-spin
+- t('aiVerifyingTitle') text-lg font-semibold mt-6
+- t('aiVerifyingSubtitle') text-sm text-muted text-center px-8
+- setTimeout 2000ms then show modal
+
+PHASE 2 — Result Modal (fixed inset-0 bg-black/40 z-50 flex items-center justify-center):
+- White card max-w-xs rounded-2xl p-8 text-center
+- If Math.random() < 0.7 (Approved):
+  - CheckCircle icon size=52 color=#166534
+  - t('approvedTitle') text-xl font-bold mt-4
+  - t('approvedMessage') text-sm text-muted mt-2
+  - Divider hr mt-4
+  - t('estimatedBill') text-xs uppercase text-muted mt-4
+  - formatCurrency(bill) text-2xl font-bold text-[#1B5E37] mt-1
+  - Primary button: t('goToDashboard') mt-6
+- If Needs Review:
+  - AlertTriangle icon size=52 color=#92400E
+  - t('reviewTitle') text-xl font-bold mt-4 text-[#92400E]
+  - t('reviewMessage') text-sm text-muted mt-2
+  - Divider hr mt-4
+  - t('estimatedBill') text-xs uppercase text-muted mt-4
+  - formatCurrency(bill) text-2xl font-bold text-[#1B5E37] mt-1
+  - Primary button: t('goToDashboard') mt-6
+
+On button: addRequest({
+  id: "REQ-" + Date.now(),
+  cropKey, seasonKey, duration,
+  landArea: profile.landArea,
+  imageUrl: capturedImageUrl or null,
+  status: resultStatus,
+  billAmount: calculatedBill,
+  paid: false,
+  date: new Date().toISOString().split('T')[0],
+  beneficiaryType: profile.beneficiaryType,
+  waterSource: profile.waterSource
+}), navigate('/dashboard')
+
+---
+
+## SCREEN 5 — RequestsPage.jsx (Route: "/requests")
+
+Header: ArrowLeft + t('requestsTitle'). Lang toggle top-right.
+
+All requests sorted newest first. Each rendered as white card:
+- Top row: request.id text-xs text-muted | StatusChip right
+- t('crop'): t(request.cropKey)
+- t('season'): t(request.seasonKey)
+- t('duration'): request.duration t('days')
+- t('submittedOn'): request.date
+- t('billAmount'): formatCurrency(request.billAmount) font-semibold text-[#1B5E37]
+
+Empty state: FileText icon + t('noRequests') centered
+BottomNav active on Requests.
+
+---
+
+## SCREEN 6 — BillingPage.jsx (Route: "/billing")
+
+Header: t('billingTitle'). Lang toggle top-right.
+
+Top summary: BillCard with totalBill, totalPaid, totalUnpaid.
+
+Each request billing card:
+- t('requestId'): request.id
+- t('crop'): t(request.cropKey) | t('season'): t(request.seasonKey)
+- t('duration'): request.duration t('days')
+- t('amount'): formatCurrency(request.billAmount) font-semibold
+- t('paymentStatus'): StatusChip showing t('paid') or t('unpaid') based on request.paid
+
+Empty: IndianRupee icon + t('noBillingRecords').
+BottomNav active on Billing.
+
+---
+
+## REUSABLE COMPONENTS
+
+### StatusChip.jsx
+Import useLang. Props: status string.
+- "Approved" → bg-[#DCFCE7] text-[#166534], display t('statusApproved')
+- "Pending" → bg-[#FEF3C7] text-[#92400E], display t('statusPending')
+- "Needs Review" → bg-[#FEE2E2] text-[#991B1B], display t('statusNeedsReview')
+Text updates on lang switch.
+
+### RequestCard.jsx
+Import useLang, formatCurrency from billing.js.
+Shows: t(request.cropKey), t(request.seasonKey), request.date, StatusChip, formatCurrency(request.billAmount).
+All labels via t().
+
+### BillCard.jsx
+Import useLang, formatCurrency.
+Props: requests array. Compute totals internally.
+All labels via t().
+
+### Header.jsx
+Props: title (pre-translated string from parent), showBack, showLogo.
+Right side always has Globe icon + t('langLabel') button calling cycleLang().
+
+### BottomNav.jsx
+Import useLang. All labels via t(). Icons from lucide-react.
+Active: text-[#1B5E37] with top border.
+
+---
+
+## ROUTING — App.jsx
+```jsx
+<BrowserRouter>
+  <LangProvider>
+    <AppProvider>
+      <Routes>
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/profile" element={<ProfileSetupPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/request" element={<RequestFormPage />} />
+        <Route path="/requests" element={<RequestsPage />} />
+        <Route path="/billing" element={<BillingPage />} />
+      </Routes>
+    </AppProvider>
+  </LangProvider>
+</BrowserRouter>
+```
+
+---
+
+## BEHAVIOR REQUIREMENTS
+
+- Language toggle cycles EN → MR → HI → EN, every visible string switches instantly, zero hardcoded text in JSX
+- Camera capture: input type="file" accept="image/*" capture="environment" — triggers device camera
+- Gallery upload: input type="file" accept="image/*" — triggers file picker
+- Image preview: URL.createObjectURL(file) immediately after selection
+- Bill preview: useEffect updates whenever cropKey or seasonKey changes, uses Table 3 area-based rates
+- AI simulation: setTimeout(2000) + Math.random() < 0.7
+- Crop and season stored as keys, rendered via t() at display time
+- All state in context, session-persisted
+- 3 mock requests preloaded in AppContext initial state
+- Mobile responsive 375px minimum width
+- Lucide-react icons only, no emoji
+- No gradients, shadow-sm only, flat government UI
+- Noto Sans font loaded from Google Fonts in index.css
+
+---
+
+## BUILD ORDER
+
+1. Vite + React + Tailwind CSS, install lucide-react, add Noto Sans to index.css
+2. LangContext.jsx — full 3-language translations + cycleLang + t()
+3. AppContext.jsx — profile + requests state + addRequest + mock data
+4. billing.js — AREA_RATES, LIFT_RATES, VOLUMETRIC_RATES, calculateAreaBill, getAreaRate, formatCurrency
+5. StatusChip, RequestCard, BillCard, Header, BottomNav components
+6. LoginPage (phone + OTP, lang toggle)
+7. ProfileSetupPage (all fields including beneficiaryType + waterSource)
+8. DashboardPage (4 sections, BillCard, lang-reactive)
+9. RequestFormPage (form + camera + gallery + live bill + AI overlay + modal)
+10. RequestsPage + BillingPage
+11. App.jsx routing
+12. Test: lang toggle on every screen switches all text; billing math matches government tariff table 3 rates; camera opens device camera; gallery opens file picker
+
+Deliver a fully working, professional, demo-ready hackathon prototype with accurate government tariff billing rates, three-language support with instant complete switching, and camera capture capability.

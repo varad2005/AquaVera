@@ -4,6 +4,42 @@
 
 pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
 
+## AquaVera App (`artifacts/aquavera`)
+
+A React frontend prototype for AI-powered irrigation water billing and crop verification for Indian farmers.
+
+### Features
+- Mobile-first UI (max 480px), flat government design with Deep Forest Green (#1B5E37) palette
+- Three-language support: English, Marathi, Hindi — toggle cycles EN → MR → HI → EN
+- OTP login simulation, profile setup with beneficiary type & water source
+- Dashboard with land summary, request CTA, recent requests, billing summary
+- Water request form with crop/season selection, photo capture/upload, live bill preview
+- AI verification simulation (2s spinner + 70/30 Approved/Under Review result)
+- Billing page with per-request breakdown and payment status
+- Government tariff-accurate billing: Area-based rates (Table 3) — Rs/Ha per crop per season
+- All state managed in React context (AppContext + LangContext)
+
+### File Structure
+```
+artifacts/aquavera/src/
+  context/LangContext.jsx    - 3-language translation system
+  context/AppContext.jsx     - Profile + requests state with mock data
+  utils/billing.js           - Billing rate tables + calculation functions
+  components/
+    Header.jsx               - App header with back button + lang toggle
+    BottomNav.jsx            - Tab navigation (Dashboard/Requests/Billing)
+    StatusChip.jsx           - Status badge (Approved/Pending/Under Review)
+    RequestCard.jsx          - Request summary card
+    BillCard.jsx             - Billing summary card
+  pages/
+    LoginPage.jsx            - Phone + OTP flow
+    ProfileSetupPage.jsx     - Profile setup with beneficiary type
+    DashboardPage.jsx        - Main dashboard
+    RequestFormPage.jsx      - Water request form with AI simulation
+    RequestsPage.jsx         - All requests list
+    BillingPage.jsx          - Billing records
+```
+
 ## Stack
 
 - **Monorepo tool**: pnpm workspaces
