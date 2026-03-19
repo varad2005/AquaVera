@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '../lib/supabaseClient';
+
+const DEMO_SESSION_KEY = 'aquavera_demo_session';
 
 const AppContext = createContext();
 
@@ -18,19 +19,28 @@ export function AppProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
+    try {
+      const savedSession = localStorage.getItem(DEMO_SESSION_KEY);
+      if (savedSession) {
+        setSession(JSON.parse(savedSession));
+      }
+    } catch (err) {
+      console.warn('Failed to read demo session from localStorage', err);
+    } finally {
       setLoading(false);
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
+    }
   }, []);
+
+  const loginWithPhone = (phone) => {
+    const demoSession = {
+      phone,
+      loggedIn: true,
+      loggedInAt: new Date().toISOString(),
+    };
+
+    localStorage.setItem(DEMO_SESSION_KEY, JSON.stringify(demoSession));
+    setSession(demoSession);
+  };
 
   const setProfile = (data) => {
     setProfileState({ ...data, isSetup: true });
@@ -40,8 +50,8 @@ export function AppProvider({ children }) {
     setRequests(prev => [req, ...prev]);
   };
 
-  const logout = async () => {
-    await supabase.auth.signOut();
+  const logout = () => {
+    localStorage.removeItem(DEMO_SESSION_KEY);
     setSession(null);
     setProfileState({
       name: '',
@@ -52,6 +62,7 @@ export function AppProvider({ children }) {
       beneficiaryType: 'wua',
       waterSource: null
     });
+    setRequests([]);
   };
 
   return (
@@ -62,6 +73,7 @@ export function AppProvider({ children }) {
       requests, 
       setRequests,
       addRequest, 
+      loginWithPhone,
       logout,
       loading 
     }}>

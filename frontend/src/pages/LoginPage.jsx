@@ -1,72 +1,79 @@
-import { useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Droplets, Globe } from 'lucide-react';
 import { useLang } from '../context/LangContext';
 import { useLocation } from 'wouter';
 import { useApp } from '../context/AppContext';
-import { supabase } from '../lib/supabaseClient';
 
 export default function LoginPage() {
   const { t, cycleLang } = useLang();
-  const { profile } = useApp();
+  const { profile, session, loginWithPhone } = useApp();
   const [, navigate] = useLocation();
 
   const [step, setStep] = useState('phone');
   const [phone, setPhone] = useState('');
-  const [otp, setOtp] = useState(['', '', '', '']);
+  const [otp, setOtp] = useState('');
+  const [generatedOtp, setGeneratedOtp] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [otpError, setOtpError] = useState('');
+  const [statusMessage, setStatusMessage] = useState('');
 
-  const otpRefs = [useRef(), useRef(), useRef(), useRef()];
+  useEffect(() => {
+    if (session?.loggedIn) {
+      navigate('/dashboard');
+    }
+  }, [navigate, session]);
 
-  const handleSendOtp = async () => {
+  const generateDemoOtp = () => String(Math.floor(100000 + Math.random() * 900000));
+
+  const handleSendOtp = () => {
     if (!/^\d{10}$/.test(phone)) {
       setPhoneError(t('invalidMobile'));
       return;
     }
+
     setPhoneError('');
-    
-    try {
-      const { error } = await supabase.auth.signInWithOtp({
-        phone: `+91${phone}`, // Assuming Indian numbers as per context
-      });
-      if (error) throw error;
-      setStep('otp');
-    } catch (err) {
-      setPhoneError(err.message || 'Failed to send OTP');
-    }
+    const newOtp = generateDemoOtp();
+
+    setGeneratedOtp(newOtp);
+    setOtp('');
+    setOtpError('');
+    setStatusMessage('Demo OTP generated. Check console or use the value shown below.');
+    setStep('otp');
+
+    // Demo-only OTP for local development/hackathon use.
+    console.log('[AquaVera Demo OTP]', { phone: `+91${phone}`, otp: newOtp });
   };
 
-  const handleVerify = async () => {
-    const code = otp.join('');
-    if (code.length !== 4) {
+  const handleVerify = () => {
+    if (!/^\d{6}$/.test(otp)) {
       setOtpError(t('invalidOtp'));
       return;
     }
-    setOtpError('');
-    
-    try {
-      const { error, data: { session } } = await supabase.auth.verifyOtp({
-        phone: `+91${phone}`,
-        token: code,
-        type: 'sms',
-      });
-      
-      if (error) throw error;
 
-      if (profile.isSetup) {
-        navigate('/dashboard');
-      } else {
-        navigate('/profile');
-      }
-    } catch (err) {
-      setOtpError(err.message || 'Invalid OTP');
+    if (otp !== generatedOtp) {
+      setOtpError('Incorrect OTP. Please try again.');
+      return;
+    }
+
+    setOtpError('');
+    setStatusMessage('OTP verified successfully. Logged in with demo session.');
+
+    loginWithPhone(`+91${phone}`);
+    if (profile.isSetup) {
+      navigate('/dashboard');
+    } else {
+      navigate('/dashboard');
     }
   };
 
   const handleResend = () => {
-    setOtp(['', '', '', '']);
+    const newOtp = generateDemoOtp();
+    setGeneratedOtp(newOtp);
+    setOtp('');
     setOtpError('');
-    otpRefs[0].current?.focus();
+    setStatusMessage('New demo OTP generated. Check console or use the value shown below.');
+
+    console.log('[AquaVera Demo OTP - Resend]', { phone: `+91${phone}`, otp: newOtp });
   };
 
   return (
@@ -120,21 +127,22 @@ export default function LoginPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-[#4B5563] mb-3">{t('otpLabel')}</label>
-                <div className="flex gap-3 justify-center">
-                  {otp.map((digit, idx) => (
-                    <input
-                      key={idx}
-                      ref={otpRefs[idx]}
-                      type="tel"
-                      maxLength={1}
-                      value={digit}
-                      onChange={e => handleOtpChange(idx, e.target.value)}
-                      onKeyDown={e => handleOtpKeyDown(idx, e)}
-                      className="w-12 h-12 text-center text-xl border border-[#D1D9D4] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1B5E37] bg-white font-semibold"
-                      autoFocus={idx === 0}
-                    />
-                  ))}
-                </div>
+                <input
+                  type="tel"
+                  maxLength={6}
+                  inputMode="numeric"
+                  value={otp}
+                  onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  className="w-full border border-[#D1D9D4] rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#1B5E37] bg-white"
+                  placeholder="Enter 6-digit OTP"
+                  autoFocus
+                />
+                {generatedOtp && (
+                  <p className="text-xs text-[#1B5E37] mt-2">
+                    Demo OTP: <span className="font-semibold">{generatedOtp}</span>
+                  </p>
+                )}
+                {statusMessage && <p className="text-xs text-[#4B5563] mt-2">{statusMessage}</p>}
                 {otpError && <p className="text-xs text-[#991B1B] mt-2 text-center">{otpError}</p>}
               </div>
               <button

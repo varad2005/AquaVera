@@ -8,7 +8,7 @@ import BillCard from '../components/BillCard';
 
 export default function DashboardPage() {
   const { t, cycleLang } = useLang();
-  const { profile, requests } = useApp();
+  const { profile, requests, logout } = useApp();
   const [, navigate] = useLocation();
 
   const lastRequest = requests[0];
@@ -28,6 +28,15 @@ export default function DashboardPage() {
             className="flex items-center gap-1.5 text-sm font-medium text-[#1B5E37] border border-[#1B5E37] rounded-lg px-2.5 py-1 hover:bg-[#E8F5EE] transition-colors"
           >
             <span>{t('langLabel')}</span>
+          </button>
+          <button
+            onClick={() => {
+              logout();
+              navigate('/');
+            }}
+            className="ml-2 text-sm font-medium text-[#991B1B] border border-[#991B1B] rounded-lg px-2.5 py-1 hover:bg-[#FEE2E2] transition-colors"
+          >
+            Logout
           </button>
         </div>
 
